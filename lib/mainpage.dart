@@ -8,6 +8,51 @@ class TicApp extends StatefulWidget {
 }
 
 class _TicAppState extends State<TicApp> {
+  List<String> board = List.filled(9, '');
+  bool isXTurn = true;
+  String result = '';
+  bool gameEnd = false;
+
+  void resetGame() {
+    setState(() {
+      board = List.filled(9, '');
+      isXTurn = true;
+      result = '';
+      gameEnd = false;
+    });
+  }
+
+  void onTileTap(int index) {
+    if (board[index] == '' && !gameEnd) {
+      setState(() {
+        board[index] = isXTurn ? 'X' : 'O';
+        isXTurn = !isXTurn;
+        result = checkWinner();
+      });
+    }
+  }
+
+  String checkWinner() {
+    List<List<int>> winConditions = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], //Rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], //Columns
+      [0, 4, 8], [2, 4, 6]
+    ];
+    for (var condition in winConditions) {
+      if (board[condition[0]] != '' &&
+          board[condition[0]] == board[condition[1]] &&
+          board[condition[1]] == board[condition[2]]) {
+        gameEnd = true;
+        return '${board[condition[0]]} Wins!';
+      }
+    }
+    if (!board.contains('')) {
+      gameEnd = true;
+      return 'Draw!';
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +68,7 @@ class _TicAppState extends State<TicApp> {
         children: [
           Expanded(
               child: GridView.builder(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 10,
@@ -32,7 +77,7 @@ class _TicAppState extends State<TicApp> {
                   itemCount: 9,
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                      onTap: () => {},
+                      onTap: () => onTileTap(index),
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.blue.shade50,
@@ -42,9 +87,9 @@ class _TicAppState extends State<TicApp> {
                             width: 4,
                           ),
                         ),
-                        child: const Center(
-                          child: Text("X",
-                              style: TextStyle(
+                        child: Center(
+                          child: Text(board[index],
+                              style: const TextStyle(
                                   fontSize: 48, fontWeight: FontWeight.bold)),
                         ),
                       ),
@@ -54,9 +99,9 @@ class _TicAppState extends State<TicApp> {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
-                const Text(
-                  "X Wins",
-                  style: TextStyle(
+                Text(
+                  result,
+                  style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87),
@@ -65,13 +110,16 @@ class _TicAppState extends State<TicApp> {
                   height: 20,
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: resetGame,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 20),
+                    padding: const EdgeInsets.all(10),
+                    backgroundColor: Colors.blue,
                     textStyle: const TextStyle(fontSize: 20),
                   ),
-                  child: const Text('Restart Game'),
+                  child: const Text(
+                    'Restart Game',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 )
               ],
             ),
